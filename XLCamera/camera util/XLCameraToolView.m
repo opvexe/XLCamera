@@ -42,7 +42,44 @@
 
 
 
+/*!
+ * Button点击
+ */
 
+-(void)dothings:(UIButton *)sender{
+    
+    switch (sender.tag -100) {
+        case 1:
+        {
+            if (self.delegate && [self.delegate respondsToSelector:@selector(onDismiss)]) {
+                [self.delegate performSelector:@selector(onDismiss)];
+            }
+        }
+            break;
+            
+        case 2:
+        {
+//            [self resetUI];
+            if (self.delegate && [self.delegate respondsToSelector:@selector(onRetake)]) {
+                [self.delegate performSelector:@selector(onRetake)];
+            }
+        }
+            break;
+        case 3:
+        {
+            if (self.delegate && [self.delegate respondsToSelector:@selector(onOkClick)]) {
+                [self.delegate performSelector:@selector(onOkClick)];
+            }
+        }
+            break;
+            
+        default:
+            break;
+    }
+}
+
+
+#pragma mark   < GestureRecognizer >
 
 
 /*!
@@ -87,9 +124,11 @@
         _cancelBtn = [UIButton buttonWithType:UIButtonTypeCustom];
         _cancelBtn.backgroundColor = [kRGB(244, 244, 244) colorWithAlphaComponent:.9];
         [_cancelBtn setImage:[UIImage imageNamed:@"retake"] forState:UIControlStateNormal];
-        [_cancelBtn addTarget:self action:@selector(retake) forControlEvents:UIControlEventTouchUpInside];
+        [_cancelBtn addTarget:self action:@selector(dothings:) forControlEvents:UIControlEventTouchUpInside];
         _cancelBtn.layer.masksToBounds = YES;
         _cancelBtn.hidden = YES;
+        _cancelBtn.tag = 101;
+        [self addSubview:_cancelBtn];
     }
     return _cancelBtn;
 }
@@ -99,10 +138,27 @@
         _dismissBtn = [UIButton buttonWithType:UIButtonTypeCustom];
         _dismissBtn.frame = CGRectMake(60, self.bounds.size.height/2-25/2, 25, 25);
         [_dismissBtn setImage:[UIImage imageNamed:@"arrow_down"] forState:UIControlStateNormal];
-        [_dismissBtn addTarget:self action:@selector(dismissVC) forControlEvents:UIControlEventTouchUpInside];
+        [_dismissBtn addTarget:self action:@selector(dothings:) forControlEvents:UIControlEventTouchUpInside];
+        _dismissBtn.tag = 102;
+        [self addSubview:_dismissBtn];
     }
     return _dismissBtn;
 }
 
+-(UIButton *)doneBtn{
+    if (!_doneBtn) {
+        _doneBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+        _doneBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+        _doneBtn.frame = self.bottomView.frame;
+        _doneBtn.backgroundColor = [UIColor whiteColor];
+        [_doneBtn setImage:[UIImage imageNamed:@"takeok"] forState:UIControlStateNormal];
+        [_doneBtn addTarget:self action:@selector(dothings:) forControlEvents:UIControlEventTouchUpInside];
+        _doneBtn.layer.masksToBounds = YES;
+        _doneBtn.hidden = YES;
+        _doneBtn.tag = 103;
+        [self addSubview:_doneBtn];
+    }
+    return _doneBtn;
+}
 @end
 

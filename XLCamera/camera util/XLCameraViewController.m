@@ -10,6 +10,7 @@
 #import <AVFoundation/AVFoundation.h>
 #import <CoreMotion/CoreMotion.h>
 #import "XLPlayer.h"
+
 @interface XLCameraViewController ()
 @property (nonatomic, strong) AVCaptureSession *session;                 //AVCaptureSession对象来执行输入设备和输出设备之间的数据传递
 @property (nonatomic, strong) AVCaptureDeviceInput *videoInput;          //AVCaptureDeviceInput对象是输入流
@@ -26,7 +27,6 @@
 @property (nonatomic, assign) AVCaptureVideoOrientation orientation;
 @property (nonatomic, strong) XLPlayer *playerView;                      //播放视频
 @end
-
 
 @implementation XLCameraViewController
 
@@ -160,7 +160,7 @@
 /*!
  * 调节焦距
  */
--(void)adjustCameraFocus:(UIGestureRecognizer *)tap{
+-(void)adjustCameraFocus:(UIPanGestureRecognizer *)tap{
     
 }
 
