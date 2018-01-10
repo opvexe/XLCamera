@@ -39,6 +39,8 @@
         UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(adjustCameraFocus:)];
         [self.view addGestureRecognizer:pan];
     }
+    
+    [self performSelector:@selector(hiddenTips) withObject:nil afterDelay:4];
 }
 
 
@@ -158,7 +160,7 @@
 /*!
  * 调节焦距
  */
--(void)adjustCameraFocus{
+-(void)adjustCameraFocus:(UIGestureRecognizer *)tap{
     
 }
 
@@ -192,6 +194,12 @@
             NSLog(@"切换前后摄像头失败");
         }
     }
+}
+/*!
+ * 隐藏提示
+ */
+-(void)hiddenTips{
+    self.tipsLabel.hidden = YES;
 }
 
 /*!
