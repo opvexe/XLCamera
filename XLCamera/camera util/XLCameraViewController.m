@@ -9,9 +9,15 @@
 #import "XLCameraViewController.h"
 #import <AVFoundation/AVFoundation.h>
 #import <CoreMotion/CoreMotion.h>
+#import "XLCameraToolView.h"
 #import "XLPlayer.h"
 
-@interface XLCameraViewController ()
+
+#define ZL_IS_IPHONE (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
+#define ZL_IS_IPHONE_X (ZL_IS_IPHONE && [[UIScreen mainScreen] bounds].size.height == 812.0f)
+#define ZL_SafeAreaBottom (ZL_IS_IPHONE_X ? 34 : 0)
+
+@interface XLCameraViewController ()<CameraToolViewDelegate, AVCaptureFileOutputRecordingDelegate>
 @property (nonatomic, strong) AVCaptureSession *session;                 //AVCaptureSession对象来执行输入设备和输出设备之间的数据传递
 @property (nonatomic, strong) AVCaptureDeviceInput *videoInput;          //AVCaptureDeviceInput对象是输入流
 @property (nonatomic, strong) AVCaptureStillImageOutput *imageOutPut;    //照片输出流对象
@@ -26,6 +32,7 @@
 @property (nonatomic, strong) CMMotionManager *motionManager;
 @property (nonatomic, assign) AVCaptureVideoOrientation orientation;
 @property (nonatomic, strong) XLPlayer *playerView;                      //播放视频
+@property (nonatomic, strong) XLCameraToolView *toolView;                //底部视图
 @end
 
 @implementation XLCameraViewController
@@ -94,6 +101,18 @@
     [self.view.layer insertSublayer:self.previewLayer atIndex:0];
 }
 
+#pragma mark < AVCaptureFileOutputRecordingDelegate >
+
+- (void)captureOutput:(AVCaptureFileOutput *)output didStartRecordingToOutputFileAtURL:(NSURL *)fileURL fromConnections:(NSArray<AVCaptureConnection *> *)connections{
+    
+    
+}
+
+- (void)captureOutput:(AVCaptureFileOutput *)output didFinishRecordingToOutputFileAtURL:(NSURL *)outputFileURL fromConnections:(NSArray<AVCaptureConnection *> *)connections error:(NSError *)error{
+    
+    
+}
+
 /*!
  * 视频输出配置
  */
@@ -155,7 +174,60 @@
     [captureDevice unlockForConfiguration];
 }
 
+/*!
+ * 设置聚焦点位置
+ */
+- (void)setFocusCursorWithPoint:(CGPoint)point{
+    self.focusCursorImageView.center = point;
+    self.focusCursorImageView.alpha = 1;
+    self.focusCursorImageView.transform = CGAffineTransformMakeScale(1.1, 1.1);
+    [UIView animateWithDuration:0.5 animations:^{
+        self.focusCursorImageView.transform = CGAffineTransformIdentity;
+    } completion:^(BOOL finished) {
+        self.focusCursorImageView.alpha=0;
+    }];
+    CGPoint cameraPoint = [self.previewLayer captureDevicePointOfInterestForPoint:point];     //将UI坐标转化为摄像头坐标
+    [self focusWithMode:AVCaptureFocusModeAutoFocus exposureMode:AVCaptureExposureModeAutoExpose atPoint:cameraPoint];
+}
 
+/*!
+ * 设置聚焦点
+ */
+- (void)focusWithMode:(AVCaptureFocusMode)focusMode exposureMode:(AVCaptureExposureMode)exposureMode atPoint:(CGPoint)point{
+    AVCaptureDevice * captureDevice = [self.videoInput device];
+    NSError * error;
+    //注意改变设备属性前一定要首先调用lockForConfiguration:调用完之后使用unlockForConfiguration方法解锁
+    if (![captureDevice lockForConfiguration:&error]) {
+        return;
+    }
+    //聚焦模式
+    if ([captureDevice isFocusModeSupported:focusMode]) {
+        [captureDevice setFocusMode:AVCaptureFocusModeAutoFocus];
+    }
+    //聚焦点
+    if ([captureDevice isFocusPointOfInterestSupported]) {
+        [captureDevice setFocusPointOfInterest:point];
+    }
+    //    //曝光模式
+    //    if ([captureDevice isExposureModeSupported:exposureMode]) {
+    //        [captureDevice setExposureMode:AVCaptureExposureModeAutoExpose];
+    //    }
+    //    //曝光点
+    //    if ([captureDevice isExposurePointOfInterestSupported]) {
+    //        [captureDevice setExposurePointOfInterest:point];
+    //    }
+    [captureDevice unlockForConfiguration];
+}
+
+
+- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
+    if (!self.session.isRunning) return;
+    CGPoint point = [touches.anyObject locationInView:self.view];
+    if (point.y > [UIScreen mainScreen].bounds.size.height-150-ZL_SafeAreaBottom) {
+        return;
+    }
+    [self setFocusCursorWithPoint:point];
+}
 #pragma mark  < Button事件 >
 /*!
  * 调节焦距
@@ -200,6 +272,101 @@
  */
 -(void)hiddenTips{
     self.tipsLabel.hidden = YES;
+}
+
+#pragma mark < CameraToolViewDelegate >
+
+/*!
+ 单击事件，拍照
+ */
+- (void)onTakePicture{
+    AVCaptureConnection * videoConnection = [self.imageOutPut connectionWithMediaType:AVMediaTypeVideo];
+    videoConnection.videoOrientation = self.orientation;
+    if (!videoConnection) {
+        return;
+    }
+    if (!_takedImageView) {
+        _takedImageView = [[UIImageView alloc] initWithFrame:self.view.bounds];
+        _takedImageView.backgroundColor = [UIColor blackColor];
+        _takedImageView.hidden = YES;
+        _takedImageView.contentMode = UIViewContentModeScaleAspectFit;
+        [self.view insertSubview:_takedImageView belowSubview:self.toolView];
+    }
+    __weak typeof(self) weakSelf = self;
+    [self.imageOutPut captureStillImageAsynchronouslyFromConnection:videoConnection completionHandler:^(CMSampleBufferRef imageDataSampleBuffer, NSError *error) {
+        if (imageDataSampleBuffer == NULL) {
+            return;
+        }
+        NSData * imageData = [AVCaptureStillImageOutput jpegStillImageNSDataRepresentation:imageDataSampleBuffer];
+        UIImage * image = [UIImage imageWithData:imageData];
+        weakSelf.takedImage = image;
+        weakSelf.takedImageView.hidden = NO;
+        weakSelf.takedImageView.image = image;
+        [weakSelf.session stopRunning];
+    }];
+}
+/*!
+ 开始录制
+ */
+- (void)onStartRecord{
+    AVCaptureConnection *movieConnection = [self.movieFileOutPut connectionWithMediaType:AVMediaTypeVideo];
+    movieConnection.videoOrientation = self.orientation;
+    [movieConnection setVideoScaleAndCropFactor:1.0];
+    if (![self.movieFileOutPut isRecording]) {
+        NSURL *url = [NSURL fileURLWithPath:[self getVideoExportFilePath:self.videoType]];
+        [self.movieFileOutPut startRecordingToOutputFileURL:url recordingDelegate:self];
+    }
+}
+
+-(NSString *)getVideoExportFilePath:(XLExportVideoType)type{
+    NSString *format = (type == XLExportVideoTypeMov ? @"mov" : @"mp4");
+    NSString *exportFilePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.%@",[NSData data], format]];
+    return exportFilePath;
+}
+
+/*!
+ 结束录制
+ */
+- (void)onFinishRecord{
+    [self.movieFileOutPut stopRecording];
+    [self.session stopRunning];
+    [self setVideoZoomFactor:1];
+}
+/*!
+ 重新拍照或录制
+ */
+- (void)onRetake{
+    [self.session startRunning];
+    [self setFocusCursorWithPoint:self.view.center];
+    self.takedImageView.hidden = YES;
+    [self deleteVideo];
+}
+/*!
+ 点击确定
+ */
+- (void)onOkClick{
+    [self.playerView reset];
+    if (self.doneCompletBlock) {
+        self.doneCompletBlock(self.takedImage, self.videoUrl);
+    }
+    [self onDismiss];
+}
+/*!
+ 点击取消
+ */
+- (void)onDismiss{
+    
+}
+
+/*!
+ 删除视频
+ */
+- (void)deleteVideo{
+    if (self.videoUrl) {
+        [self.playerView reset];
+        self.playerView.alpha = 0;
+        [[NSFileManager defaultManager] removeItemAtURL:self.videoUrl error:nil];
+    }
 }
 
 /*!

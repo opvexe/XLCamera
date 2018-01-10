@@ -29,4 +29,9 @@
  * 录制视频时候进度条颜色
  */
 @property (nonatomic, strong) UIColor *circleProgressColor;
+/*!
+ * block回调
+ */
+@property (nonatomic, copy) void (^doneCompletBlock)(UIImage *image, NSURL *videoUrl);
+
 @end
