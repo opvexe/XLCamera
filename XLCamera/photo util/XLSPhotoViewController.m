@@ -9,6 +9,7 @@
 #import "XLSPhotoViewController.h"
 #import "XLSCameraManager.h"
 #import "XLPhotoLibraryManager.h"
+#import "XLConst.h"
 
 @interface XLSPhotoViewController ()
 /** 背景视图 */
@@ -117,7 +118,7 @@
 
 -(UIButton *)inputButton{
     if (!_inputButton) {
-        _inputButton = [[UIButton alloc] initWithFrame:CGRectMake(([UIScreen mainScreen].bounds.size.width - 60)/2, [UIScreen mainScreen].bounds.size.height - 60 - 30, 60, 60)];
+        _inputButton = [[UIButton alloc] initWithFrame:CGRectMake(([UIScreen mainScreen].bounds.size.width - PhotoButtonLength)/2, [UIScreen mainScreen].bounds.size.height - PhotoButtonLength - PhotoButtonLength/2, PhotoButtonLength, PhotoButtonLength)];
         [_inputButton setBackgroundImage:[UIImage imageNamed:@"release_video_shooting"] forState:UIControlStateNormal];
         [_inputButton addTarget:self action:@selector(dothings:) forControlEvents:UIControlEventTouchUpInside];
         _inputButton.tag = 100;
@@ -127,7 +128,7 @@
 
 -(UIButton *)leftButton{
     if (!_leftButton) {
-        _leftButton = [[UIButton alloc] initWithFrame:CGRectMake(CGRectGetMinX(self.inputButton.frame) - 36 - 44, CGRectGetMinY(self.inputButton.frame) + (CGRectGetHeight(self.inputButton.frame) - 36) / 2 , 36, 36)];
+        _leftButton = [[UIButton alloc] initWithFrame:CGRectMake(CGRectGetMinX(self.inputButton.frame) - PhotoBackLength - PhotoHorizontalMargin, CGRectGetMinY(self.inputButton.frame) + (CGRectGetHeight(self.inputButton.frame) - PhotoBackLength) / 2 , PhotoBackLength, PhotoBackLength)];
         [_leftButton setBackgroundImage:[UIImage imageNamed:@"release_video_down"] forState:UIControlStateNormal];
         [_leftButton setBackgroundImage:[UIImage imageNamed:@"release_video_return"] forState:UIControlStateSelected];
         [_leftButton setShowsTouchWhenHighlighted:false];
@@ -140,7 +141,7 @@
 
 -(UIButton *)rightButton{
     if (!_rightButton) {
-        _rightButton = [[UIButton alloc] initWithFrame:CGRectMake(CGRectGetMaxX(self.inputButton.frame) + 44, CGRectGetMinY(self.leftButton.frame), 36, 36)];
+        _rightButton = [[UIButton alloc] initWithFrame:CGRectMake(CGRectGetMaxX(self.inputButton.frame) + PhotoHorizontalMargin, CGRectGetMinY(self.leftButton.frame), PhotoBackLength, PhotoBackLength)];
         [_rightButton setBackgroundImage:[UIImage imageNamed:@"release_video_switch"] forState:UIControlStateNormal];
         [_rightButton setBackgroundImage:[UIImage imageNamed:@"release_video_determine"] forState:UIControlStateSelected];
         [_rightButton addTarget:self action:@selector(dothings:) forControlEvents:UIControlEventTouchUpInside];
