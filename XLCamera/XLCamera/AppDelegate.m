@@ -9,7 +9,7 @@
 #import "AppDelegate.h"
 #import "XLCameraViewController.h"
 #import "XLConst.h"
-#import "XLSCameraViewController.h"
+#import "XLSPhotoViewController.h"
 @interface AppDelegate ()
 
 @end
@@ -28,7 +28,7 @@
 //    camera.doneCompletBlock = ^(UIImage *image, NSURL *videoUrl) {
 //
 //    };
-    self.window.rootViewController = [XLSCameraViewController new];
+    self.window.rootViewController = [XLSPhotoViewController new];
     [self.window makeKeyAndVisible];
     return YES;
 }

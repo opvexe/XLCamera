@@ -10,14 +10,14 @@
 
 @protocol CameraViewControllerDelegate <NSObject>
 
-- (void)photoCompleteWithPhoto:(NSString *)photo data:(NSData *)data;
+- (void)photoCompleteWithPhoto:(UIImage *)photo;
 
 @end
 
 /**
  * 自定义相机
  */
-@interface XLSCameraViewController : UIViewController
+@interface XLSPhotoViewController : UIViewController
 
 @property (nonatomic, weak) id<CameraViewControllerDelegate> delegate;
 

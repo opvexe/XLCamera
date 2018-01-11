@@ -6,10 +6,11 @@
 //  Copyright © 2018年 Facebook. All rights reserved.
 //
 
-#import "XLSCameraViewController.h"
+#import "XLSPhotoViewController.h"
 #import "XLSCameraManager.h"
+#import "XLPhotoLibraryManager.h"
 
-@interface XLSCameraViewController ()
+@interface XLSPhotoViewController ()
 /** 背景视图 */
 @property (nonatomic, strong) UIView *backView;
 /** 录制/暂停按钮 */
@@ -22,7 +23,7 @@
 @property (nonatomic, strong) XLSCameraManager *manager;
 @end
 
-@implementation XLSCameraViewController
+@implementation XLSPhotoViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -70,7 +71,11 @@
                 [self.manager exchangeCamera];
             }else{         //确定
                 if ([self.manager getOriginalImage]) {
-                    
+                    [XLPhotoLibraryManager savePhotoWithImage:[self.manager getOriginalImage] andAssetCollectionName:nil withCompletion:^(UIImage *image, NSError *error) {
+                        if (self.delegate&&[self.delegate respondsToSelector:@selector(photoCompleteWithPhoto:)]) {
+                            [self.delegate photoCompleteWithPhoto:image];
+                        }
+                    }];
                 }
             }
         }
