@@ -11,6 +11,13 @@
 
 #import <UIKit/UIKit.h>
 
+#define kRGB(r, g, b)   [UIColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:1]
+#define kViewWidth      [[UIScreen mainScreen] bounds].size.width
+#define kViewHeight     [[UIScreen mainScreen] bounds].size.height
+#define ZL_IS_IPHONE (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
+#define ZL_IS_IPHONE_X (ZL_IS_IPHONE && [[UIScreen mainScreen] bounds].size.height == 812.0f)
+#define ZL_SafeAreaBottom (ZL_IS_IPHONE_X ? 34 : 0)
+
 #endif /* XLConst_h */
 
 
@@ -42,5 +49,5 @@ extern CGFloat  const PhotoVerticalMargin;
 extern CGFloat  const PhotoHorizontalMargin;
 extern CGFloat  const PhotoInsideMargin;
 extern CGFloat  const PhotoBackLength;
-
+extern CGFloat  const PhotoToolViewVerticalLength;
 

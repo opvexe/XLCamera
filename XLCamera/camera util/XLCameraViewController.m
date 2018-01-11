@@ -12,11 +12,6 @@
 #import "XLCameraToolView.h"
 #import "XLPlayer.h"
 
-
-#define ZL_IS_IPHONE (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
-#define ZL_IS_IPHONE_X (ZL_IS_IPHONE && [[UIScreen mainScreen] bounds].size.height == 812.0f)
-#define ZL_SafeAreaBottom (ZL_IS_IPHONE_X ? 34 : 0)
-
 @interface XLCameraViewController ()<CameraToolViewDelegate, AVCaptureFileOutputRecordingDelegate>
 @property (nonatomic, strong) AVCaptureSession *session;                 //AVCaptureSession对象来执行输入设备和输出设备之间的数据传递
 @property (nonatomic, strong) AVCaptureDeviceInput *videoInput;          //AVCaptureDeviceInput对象是输入流
@@ -36,22 +31,79 @@
 @end
 
 @implementation XLCameraViewController
+{
+    BOOL _dragStart;    //拖拽手势开始的录制
+    BOOL _layoutOK;
+}
+- (void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+    [UIApplication sharedApplication].statusBarHidden = YES;
+    [self.session startRunning];
+    [self setFocusCursorWithPoint:self.view.center];
+}
+
+- (void)viewDidDisappear:(BOOL)animated{
+    [super viewDidDisappear:animated];
+    [UIApplication sharedApplication].statusBarHidden = NO;
+    if (self.session) {
+        [self.session stopRunning];
+    }
+}
+
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations{
+    return UIInterfaceOrientationMaskPortrait;
+}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-
-    [self setupCamera];
     
-    if (self.allowRecordVideo) {
+    [self setupCamera];
+    [self observeDeviceMotion];
+    
+    [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^(BOOL granted) {
+        if (granted) {
+            [AVCaptureDevice requestAccessForMediaType:AVMediaTypeAudio completionHandler:^(BOOL granted) {
+                if (!granted) {
+                    [self onDismiss];
+                } else {
+                    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willResignActive) name:UIApplicationWillResignActiveNotification object:nil];
+                }
+            }];
+        } else {
+            [self onDismiss];
+        }
+    }];
+    
+    [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayAndRecord error:nil];     //暂停其他音乐，
+    [[AVAudioSession sharedInstance] setActive:YES error:nil];
+    
+    if (self.allowRecordVideo) {                ///添加录制手势
         UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(adjustCameraFocus:)];
         [self.view addGestureRecognizer:pan];
     }
     
-    [self performSelector:@selector(hiddenTips) withObject:nil afterDelay:4];
+    [self performSelector:@selector(hiddenTips) withObject:nil afterDelay:4];           ///延迟4秒隐藏提示文字
 }
 
+- (void)viewDidLayoutSubviews{
+    [super viewDidLayoutSubviews];
+    if (_layoutOK) return;
+    _layoutOK = YES;
+    self.toolView.frame = CGRectMake(0, kViewHeight-130-ZL_SafeAreaBottom, kViewWidth, PhotoToolViewVerticalLength);
+    self.tipsLabel.frame =CGRectMake(PhotoHorizontalMargin,CGRectGetMinY(self.toolView.frame)-PhotoInsideMargin-PhotoHorizontalMargin,self.view.frame.size.width - PhotoHorizontalMargin * 2, PhotoHorizontalMargin);
+    self.toggleCameraBtn.frame = CGRectMake(self.view.frame.size.width - PhotoInsideMargin*3/2-PhotoBackLength, PhotoInsideMargin*2, PhotoBackLength, PhotoBackLength);
+    self.previewLayer.frame = self.view.layer.bounds;
+}
 
+- (void)viewWillDisappear:(BOOL)animated{
+    [super viewWillDisappear:animated];
+    [self.motionManager stopDeviceMotionUpdates];
+    self.motionManager = nil;
+}
 
+/*!
+ * 视频输出输入配置
+ */
 - (void)setupCamera{
     self.session = [[AVCaptureSession alloc] init];
     
@@ -102,15 +154,62 @@
 }
 
 #pragma mark < AVCaptureFileOutputRecordingDelegate >
-
 - (void)captureOutput:(AVCaptureFileOutput *)output didStartRecordingToOutputFileAtURL:(NSURL *)fileURL fromConnections:(NSArray<AVCaptureConnection *> *)connections{
-    
-    
+    [self.toolView startAnimate];
 }
 
 - (void)captureOutput:(AVCaptureFileOutput *)output didFinishRecordingToOutputFileAtURL:(NSURL *)outputFileURL fromConnections:(NSArray<AVCaptureConnection *> *)connections error:(NSError *)error{
+    if (CMTimeGetSeconds(output.recordedDuration) < 1) {      //视频长度小于1s 则拍照
+        [self onTakePicture];
+        return;
+    }
+    self.videoUrl = outputFileURL;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self playVideo];
+    });
+}
+
+#pragma mark <视频输出配置>
+/*!
+ * 监控运动方向
+ */
+- (void)observeDeviceMotion{
+    self.motionManager = [[CMMotionManager alloc] init];     // 提供设备运动数据到指定的时间间隔
+    self.motionManager.deviceMotionUpdateInterval = .5;
     
-    
+    if (self.motionManager.deviceMotionAvailable) {  // 确定是否使用任何可用的态度参考帧来决定设备的运动是否可用
+        // 启动设备的运动更新，通过给定的队列向给定的处理程序提供数据。
+        [self.motionManager startDeviceMotionUpdatesToQueue:[NSOperationQueue mainQueue] withHandler:^(CMDeviceMotion *motion, NSError *error) {
+            [self performSelectorOnMainThread:@selector(handleDeviceMotion:) withObject:motion waitUntilDone:YES];
+        }];
+    } else {
+        self.motionManager = nil;
+    }
+}
+/*!
+ * 监控运动方向坐标判断方向
+ */
+- (void)handleDeviceMotion:(CMDeviceMotion *)deviceMotion{
+    double x = deviceMotion.gravity.x;
+    double y = deviceMotion.gravity.y;
+    if (fabs(y) >= fabs(x)) {
+        if (y >= 0){
+            // UIDeviceOrientationPortraitUpsideDown;
+            self.orientation = AVCaptureVideoOrientationPortraitUpsideDown;
+        } else {
+            // UIDeviceOrientationPortrait;
+            self.orientation = AVCaptureVideoOrientationPortrait;
+        }
+    } else {
+        if (x >= 0) {
+            //视频拍照转向，左右和屏幕转向相反
+            // UIDeviceOrientationLandscapeRight;
+            self.orientation = AVCaptureVideoOrientationLandscapeLeft;
+        } else {
+            // UIDeviceOrientationLandscapeLeft;
+            self.orientation = AVCaptureVideoOrientationLandscapeRight;
+        }
+    }
 }
 
 /*!
@@ -219,7 +318,9 @@
     [captureDevice unlockForConfiguration];
 }
 
-
+/*!
+ * 点击屏幕设置聚焦点
+ */
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
     if (!self.session.isRunning) return;
     CGPoint point = [touches.anyObject locationInView:self.view];
@@ -228,12 +329,43 @@
     }
     [self setFocusCursorWithPoint:point];
 }
+
 #pragma mark  < Button事件 >
+
+/*!
+ *  注册通知
+ */
+- (void)willResignActive{
+    if ([self.session isRunning]) {
+        [self dismissViewControllerAnimated:YES completion:nil];
+    }
+}
+
 /*!
  * 调节焦距
  */
--(void)adjustCameraFocus:(UIPanGestureRecognizer *)tap{
-    
+- (void)adjustCameraFocus:(UIPanGestureRecognizer *)pan{
+    CGRect caremaViewRect = [self.toolView convertRect:self.toolView.bottomView.frame toView:self.view];
+    CGPoint point = [pan locationInView:self.view];
+    if (pan.state == UIGestureRecognizerStateBegan) {
+        if (!CGRectContainsPoint(caremaViewRect, point)) {
+            return;
+        }
+        _dragStart = YES;
+        [self onStartRecord];
+    } else if (pan.state == UIGestureRecognizerStateChanged) {
+        if (!_dragStart) return;
+        
+        CGFloat zoomFactor = (CGRectGetMidY(caremaViewRect)-point.y)/CGRectGetMidY(caremaViewRect) * 10;
+        [self setVideoZoomFactor:MIN(MAX(zoomFactor, 1), 10)];
+    } else if (pan.state == UIGestureRecognizerStateCancelled ||
+               pan.state == UIGestureRecognizerStateEnded) {
+        if (!_dragStart) return;
+        
+        _dragStart = NO;
+        [self onFinishRecord];         //这里需要结束动画
+        [self.toolView stopAnimate];
+    }
 }
 
 /*!
@@ -355,7 +487,9 @@
  点击取消
  */
 - (void)onDismiss{
-    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self dismissViewControllerAnimated:YES completion:nil];
+    });
 }
 
 /*!
@@ -369,6 +503,19 @@
     }
 }
 
+/*!
+ 播放录制视频
+ */
+- (void)playVideo{
+    if (!_playerView) {
+        self.playerView = [[XLPlayer alloc] initWithFrame:self.view.bounds];
+        [self.view insertSubview:self.playerView belowSubview:self.toolView];
+    }
+    self.playerView.videoUrl = self.videoUrl;
+    [self.playerView play];
+}
+
+#pragma mark < 懒加载控件 >
 /*!
  * 懒加载控件
  */
@@ -397,7 +544,6 @@
 -(UILabel *)tipsLabel{
     if (!_tipsLabel) {
         _tipsLabel = [[UILabel alloc]init];
-        _tipsLabel.frame = CGRectMake(self.view.frame.size.width - PhotoInsideMargin*3/2-PhotoBackLength, PhotoInsideMargin*2, PhotoBackLength, PhotoBackLength);
         _tipsLabel.textAlignment = NSTextAlignmentCenter;
         _tipsLabel.textColor = [UIColor whiteColor];
         _tipsLabel.font = [UIFont systemFontOfSize:13.0];
@@ -407,6 +553,20 @@
     return _tipsLabel;
 }
 
+-(XLCameraToolView *)toolView{
+    if (!_toolView) {
+        _toolView = [[XLCameraToolView alloc] init];
+        _toolView.delegate = self;
+        _toolView.allowRecordVideo = self.allowRecordVideo;
+        _toolView.circleProgressColor = self.circleProgressColor;
+        _toolView.maxRecordDuration = self.maxRecordDuration;
+        [self.view addSubview:_toolView];
+    }
+    return _toolView;
+}
+
+
+#pragma mark < dealloc >
 - (void)dealloc{
     if ([_session isRunning]) {
         [_session stopRunning];

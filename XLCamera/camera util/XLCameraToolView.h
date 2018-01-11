@@ -37,5 +37,25 @@
 @end
 
 @interface XLCameraToolView : UIView
+/*!
+ 代理事件
+ */
+@property (nonatomic, weak) id<CameraToolViewDelegate> delegate;
+/*!
+ 是否允许录制
+ */
+@property (nonatomic, assign) BOOL allowRecordVideo;
+/*!
+ 录制视频时候进度条颜色
+ */
+@property (nonatomic, strong) UIColor *circleProgressColor;
+/*!
+ 最大录制时间
+ */
+@property (nonatomic, assign) NSInteger maxRecordDuration;
 
+@property (nonatomic, strong) UIView *bottomView;
+
+- (void)startAnimate;
+- (void)stopAnimate;
 @end

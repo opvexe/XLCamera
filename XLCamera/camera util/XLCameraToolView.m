@@ -15,16 +15,11 @@
 #define kRGB(r, g, b)   [UIColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:1]
 
 @interface XLCameraToolView()<CAAnimationDelegate, UIGestureRecognizerDelegate>
-@property (nonatomic, weak) id<CameraToolViewDelegate> delegate;
-@property (nonatomic, assign) BOOL allowRecordVideo;
-@property (nonatomic, strong) UIColor *circleProgressColor;
-@property (nonatomic, assign) NSInteger maxRecordDuration;
 
 @property (nonatomic, strong) UIButton *dismissBtn;
 @property (nonatomic, strong) UIButton *cancelBtn;
 @property (nonatomic, strong) UIButton *doneBtn;
 @property (nonatomic, strong) UIView *topView;
-@property (nonatomic, strong) UIView *bottomView;
 @property (nonatomic, strong) CAShapeLayer *animateLayer;
 @property (nonatomic, assign) CGFloat duration;
 

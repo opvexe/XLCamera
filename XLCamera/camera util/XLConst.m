@@ -6,7 +6,6 @@
 //  Copyright © 2018年 Facebook. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
 CGFloat  const PhotoButtonLength      = 60.0;
@@ -14,4 +13,4 @@ CGFloat  const PhotoVerticalMargin    = 80.0;
 CGFloat  const PhotoHorizontalMargin  = 25.0;
 CGFloat  const PhotoInsideMargin      = 10.0;
 CGFloat  const PhotoBackLength        = 40.0;
-
+CGFloat  const PhotoToolViewVerticalLength = 100.0;

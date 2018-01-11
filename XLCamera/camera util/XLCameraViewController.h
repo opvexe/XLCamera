@@ -30,6 +30,11 @@
  */
 @property (nonatomic, strong) UIColor *circleProgressColor;
 /*!
+ 最大录制时间
+ */
+@property (nonatomic, assign) NSInteger maxRecordDuration;
+
+/*!
  * block回调
  */
 @property (nonatomic, copy) void (^doneCompletBlock)(UIImage *image, NSURL *videoUrl);
