@@ -9,6 +9,7 @@
 #import "AppDelegate.h"
 #import "XLCameraViewController.h"
 #import "XLConst.h"
+#import "XLSCameraViewController.h"
 @interface AppDelegate ()
 
 @end
@@ -18,16 +19,16 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     self.window = [[UIWindow alloc]initWithFrame:[UIScreen mainScreen].bounds];
-    XLCameraViewController *camera = [[XLCameraViewController alloc]init];
-    camera.circleProgressColor =[UIColor greenColor];
-    camera.maxRecordDuration = 60;
-    camera.allowRecordVideo = YES;
-    camera.sessionPreset = XLCaptureSessionPreset1280x720;
-    
-    camera.doneCompletBlock = ^(UIImage *image, NSURL *videoUrl) {
-        
-    };
-    self.window.rootViewController = camera;
+//    XLCameraViewController *camera = [[XLCameraViewController alloc]init];
+//    camera.circleProgressColor =[UIColor greenColor];
+//    camera.maxRecordDuration = 60;
+//    camera.allowRecordVideo = YES;
+//    camera.sessionPreset = XLCaptureSessionPreset1280x720;
+//
+//    camera.doneCompletBlock = ^(UIImage *image, NSURL *videoUrl) {
+//
+//    };
+    self.window.rootViewController = [XLSCameraViewController new];
     [self.window makeKeyAndVisible];
     return YES;
 }

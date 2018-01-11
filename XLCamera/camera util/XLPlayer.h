@@ -34,3 +34,4 @@
 - (BOOL)isPlay;
 
 @end
+

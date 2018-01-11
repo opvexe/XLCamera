@@ -453,7 +453,7 @@
 }
 
 /*!
-  获取视频文件地址
+ 获取视频文件地址
  */
 -(NSString *)getVideoExportFilePath:(XLExportVideoType)type{
     NSString *format = (type == XLExportVideoTypeMov ? @"mov" : @"mp4");
@@ -492,7 +492,7 @@
     }
     if (self.videoUrl) {
         [XLPhotoLibraryManager saveVideoWithVideoUrl:self.videoUrl andAssetCollectionName:nil withCompletion:^(NSURL *vedioUrl, NSError *error) {
-             NSLog(@"vedioUrl:%@ = error:%@",vedioUrl,error);
+            NSLog(@"vedioUrl:%@ = error:%@",vedioUrl,error);
         }];
     }
     
