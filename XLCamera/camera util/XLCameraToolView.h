@@ -53,7 +53,9 @@
  最大录制时间
  */
 @property (nonatomic, assign) NSInteger maxRecordDuration;
-
+/*!
+ 底部视图
+ */
 @property (nonatomic, strong) UIView *bottomView;
 
 - (void)startAnimate;

@@ -23,6 +23,10 @@
     camera.maxRecordDuration = 60;
     camera.allowRecordVideo = YES;
     camera.sessionPreset = XLCaptureSessionPreset1280x720;
+    
+    camera.doneCompletBlock = ^(UIImage *image, NSURL *videoUrl) {
+        
+    };
     self.window.rootViewController = camera;
     [self.window makeKeyAndVisible];
     return YES;

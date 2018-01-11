@@ -31,7 +31,7 @@
 - (void)setVideoUrl:(NSURL *)videoUrl{
     _player = [AVPlayer playerWithURL:videoUrl];
     _player.automaticallyWaitsToMinimizeStalling = NO;
-    [_player addObserver:self forKeyPath:@"status" options:NSKeyValueObservingOptionNew context:nil];
+    [_player addObserver:self forKeyPath:@"status" options:NSKeyValueObservingOptionNew context:nil];           ///添加观察者
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(playFinished) name:AVPlayerItemDidPlayToEndTimeNotification object:nil];
     self.playerLayer.player = _player;
     self.playerLayer.videoGravity = AVLayerVideoGravityResizeAspect;

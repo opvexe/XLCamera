@@ -10,7 +10,7 @@
 #import "XLConst.h"
 
 /*!
- * 相机类
+ * 仿微信相机
  */
 @interface XLCameraViewController : UIViewController
 /*!
