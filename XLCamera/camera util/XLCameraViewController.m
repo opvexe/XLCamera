@@ -11,6 +11,8 @@
 #import <CoreMotion/CoreMotion.h>
 #import "XLCameraToolView.h"
 #import "XLPlayer.h"
+#import "XLFileManager.h"
+#import "XLPhotoLibraryManager.h"
 
 @interface XLCameraViewController ()<CameraToolViewDelegate, AVCaptureFileOutputRecordingDelegate>
 @property (nonatomic, strong) AVCaptureSession *session;                 //AVCaptureSession对象来执行输入设备和输出设备之间的数据传递
@@ -450,9 +452,12 @@
     }
 }
 
+/*!
+  获取视频文件地址
+ */
 -(NSString *)getVideoExportFilePath:(XLExportVideoType)type{
     NSString *format = (type == XLExportVideoTypeMov ? @"mov" : @"mp4");
-    NSString *exportFilePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.%@",[NSData data], format]];
+    NSString *exportFilePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.%@",[[XLFileManager defaultManager]getUniqueStrByUUID], format]];
     return exportFilePath;
 }
 
@@ -478,9 +483,23 @@
  */
 - (void)onOkClick{
     [self.playerView reset];
+    
+    //保存视频，保存图片
+    if (self.takedImage) {
+        [XLPhotoLibraryManager savePhotoWithImage:self.takedImage andAssetCollectionName:nil withCompletion:^(UIImage *image, NSError *error) {
+            NSLog(@"image:%@ = error:%@",image,error);
+        }];
+    }
+    if (self.videoUrl) {
+        [XLPhotoLibraryManager saveVideoWithVideoUrl:self.videoUrl andAssetCollectionName:nil withCompletion:^(NSURL *vedioUrl, NSError *error) {
+             NSLog(@"vedioUrl:%@ = error:%@",vedioUrl,error);
+        }];
+    }
+    
     if (self.doneCompletBlock) {
         self.doneCompletBlock(self.takedImage, self.videoUrl);
     }
+    
     [self onDismiss];
 }
 /*!

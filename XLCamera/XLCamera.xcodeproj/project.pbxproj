@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D02505E72006FB730029A56A /* XLPhotoLibraryManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D02505E62006FB730029A56A /* XLPhotoLibraryManager.m */; };
+		D02505EA2006FC240029A56A /* NSString+Hash.m in Sources */ = {isa = PBXBuildFile; fileRef = D02505E92006FC240029A56A /* NSString+Hash.m */; };
+		D02505ED2006FC360029A56A /* XLFileManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D02505EC2006FC360029A56A /* XLFileManager.m */; };
 		D0F3E914200602F9006EA732 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = D0F3E913200602F9006EA732 /* AppDelegate.m */; };
 		D0F3E917200602F9006EA732 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D0F3E916200602F9006EA732 /* ViewController.m */; };
 		D0F3E91A200602F9006EA732 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D0F3E918200602F9006EA732 /* Main.storyboard */; };
@@ -39,6 +42,12 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		D02505E52006FB730029A56A /* XLPhotoLibraryManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XLPhotoLibraryManager.h; sourceTree = "<group>"; };
+		D02505E62006FB730029A56A /* XLPhotoLibraryManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = XLPhotoLibraryManager.m; sourceTree = "<group>"; };
+		D02505E82006FC240029A56A /* NSString+Hash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Hash.h"; sourceTree = "<group>"; };
+		D02505E92006FC240029A56A /* NSString+Hash.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+Hash.m"; sourceTree = "<group>"; };
+		D02505EB2006FC360029A56A /* XLFileManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XLFileManager.h; sourceTree = "<group>"; };
+		D02505EC2006FC360029A56A /* XLFileManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = XLFileManager.m; sourceTree = "<group>"; };
 		D0F3E90F200602F9006EA732 /* XLCamera.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XLCamera.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D0F3E912200602F9006EA732 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		D0F3E913200602F9006EA732 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -90,9 +99,31 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		D02505E42006FB460029A56A /* photo util */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = "photo util";
+			sourceTree = "<group>";
+		};
+		D02505EE2006FCA80029A56A /* file util */ = {
+			isa = PBXGroup;
+			children = (
+				D02505E82006FC240029A56A /* NSString+Hash.h */,
+				D02505E92006FC240029A56A /* NSString+Hash.m */,
+				D02505EB2006FC360029A56A /* XLFileManager.h */,
+				D02505EC2006FC360029A56A /* XLFileManager.m */,
+				D02505E52006FB730029A56A /* XLPhotoLibraryManager.h */,
+				D02505E62006FB730029A56A /* XLPhotoLibraryManager.m */,
+			);
+			path = "file util";
+			sourceTree = "<group>";
+		};
 		D0F3E906200602F9006EA732 = {
 			isa = PBXGroup;
 			children = (
+				D02505EE2006FCA80029A56A /* file util */,
+				D02505E42006FB460029A56A /* photo util */,
 				D0F3E94420060312006EA732 /* camera util */,
 				D0F3E911200602F9006EA732 /* XLCamera */,
 				D0F3E92A200602FA006EA732 /* XLCameraTests */,
@@ -294,13 +325,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D02505E72006FB730029A56A /* XLPhotoLibraryManager.m in Sources */,
 				D0F3E917200602F9006EA732 /* ViewController.m in Sources */,
 				D0F3E9532006126D006EA732 /* XLConst.m in Sources */,
 				D0F3E922200602F9006EA732 /* main.m in Sources */,
+				D02505EA2006FC240029A56A /* NSString+Hash.m in Sources */,
 				D0F3E94A200604FD006EA732 /* XLPlayer.m in Sources */,
 				D0F3E914200602F9006EA732 /* AppDelegate.m in Sources */,
 				D0F3E94720060322006EA732 /* XLCameraViewController.m in Sources */,
 				D0F3E94D20060B05006EA732 /* XLCameraToolView.m in Sources */,
+				D02505ED2006FC360029A56A /* XLFileManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
